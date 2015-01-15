@@ -1,4 +1,4 @@
-Package: leafletProj
+Package: leaflet
 Type: Package
 Title: Create Interactive Web Maps with the JavaScript LeafLet Library
 Version: 0.0.8
