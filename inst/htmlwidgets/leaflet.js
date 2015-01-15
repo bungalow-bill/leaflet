@@ -253,7 +253,19 @@ var dataframe = (function() {
   };
 
   methods.tileLayer = function(urlTemplate, options) {
-    this.tiles.add(L.tileLayer(urlTemplate, options));
+    var layer = L.tileLayer(urlTemplate, options);
+    var superGetTileUrl = layer.getTileUrl;
+
+    layer.getTileUrl = function(coords) {
+        var max = Math.pow(2, layer._getZoomForUrl() + 1);
+        if ( coords.x < 0 ) { return ""; }
+        if ( coords.y < 0 ) { return ""; }
+        if ( coords.x >= max ) { return ""; }
+        if ( coords.y >= max ) { return ""; }
+        return superGetTileUrl.call(layer, coords);
+    };
+    
+    this.tiles.add( layer );
   };
 
   methods.marker = function(lat, lng, layerId, options, popup) {
