@@ -467,13 +467,7 @@ var dataframe = (function() {
     this.geojson.add(gjlayer, layerId);
   };
 
-  HTMLWidgets.widget({
-    name: "leaflet",
-    type: "output",
-    initialize: function(el, width, height) {
-      // hard-coding center/zoom here for a non-empty initial view, since there
-      // is no way for htmlwidgets to pass initial params to initialize()
-      var EPSG3413 = new L.Proj.CRS(
+    var EPSG3413 = new L.Proj.CRS(
         "EPSG:3413",
         "+proj=stere +lat_0=90 +lat_ts=70 +lon_0=-45 +k=1 +x_0=0 +y_0=0 " +
         "+ellps=WGS84 +datum=WGS84 +units=m +no_defs", {
@@ -492,6 +486,33 @@ var dataframe = (function() {
             ]
         }
       );
+
+      
+  HTMLWidgets.widget({
+    name: "leaflet",
+    type: "output",
+    initialize: function(el, width, height) {
+      // hard-coding center/zoom here for a non-empty initial view, since there
+      // is no way for htmlwidgets to pass initial params to initialize()
+ /*     var EPSG3413 = new L.Proj.CRS(
+        "EPSG:3413",
+        "+proj=stere +lat_0=90 +lat_ts=70 +lon_0=-45 +k=1 +x_0=0 +y_0=0 " +
+        "+ellps=WGS84 +datum=WGS84 +units=m +no_defs", {
+            origin: [-4194304, 4194304],
+            resolutions: [
+                8192.0,
+                4096.0,
+                2048.0,
+                1024.0,
+                512.0,
+                256.0
+            ],
+            bounds: [
+                [-4194304, -4194304],
+                [4194304, 4194304]
+            ]
+        }
+      ); */
       return L.map(el, {
         center: [51.505, -0.09],
         zoom: 13,
