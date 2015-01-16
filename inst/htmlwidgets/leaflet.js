@@ -516,7 +516,8 @@ var dataframe = (function() {
       return L.map(el, {
         center: [51.505, -0.09],
         zoom: 13,
-        crs: EPSG3413
+        crs: el.hasClass("EPSG") ? EPSG3413 : L.CRS.EPSG3857
+//        crs: EPSG3413
       });
     },
     renderValue: function(el, data, map) {
