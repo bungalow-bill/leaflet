@@ -1,13 +1,13 @@
-Package: leaflet
+Package: leaflet-proj
 Type: Package
-Title: Create Interactive Web Maps with the JavaScript LeafLet Library
+Title: Create Interactive Web Maps with the JavaScript LeafLet Library, includes proj4 support
 Version: 0.0.8
 Date: 2014-11-12
 Authors@R: as.person(c(
-    "David Currie[ctn] <hunter.currie@gmail.com>",
     "Joe Cheng [aut, cre] <joe@rstudio.com>",
     "Yihui Xie [aut]",
     "Hadley Wickham [ctb]",
+    "David Currie[ctb] <hunter.currie@gmail.com>",
     "jQuery contributors [ctb, cph] (the jQuery library in htmlwidgets/lib)",
     "Leaflet contributors [ctb, cph] (the Leaflet library in htmlwidgets/lib)",
     "RStudio [cph]"
