@@ -16,8 +16,6 @@
 #'   \code{Polygons}, \code{SpatialPolygons}, \code{SpatialPolygonsDataFrame},
 #'   \code{Line}, \code{Lines}, \code{SpatialLines}, and
 #'   \code{SpatialLinesDataFrame})
-#' @param id a character string as the identifier of the map (you do not need to
-#'   provide it unless you want to manipulate the map later in Shiny)
 #' @param width the width of the map
 #' @param height the height of the map
 #' @param padding the padding of the map
@@ -25,11 +23,11 @@
 #'   \code{\%>\%} (see examples).
 #' @example inst/examples/leaflet.R
 #' @export
-leaflet = function(data = NULL, id = NULL, width = NULL, height = NULL, padding = 0) {
+leaflet = function(data = NULL, width = NULL, height = NULL, padding = 0) {
   htmlwidgets::createWidget(
     'leaflet',
     structure(
-      list(mapId = id),
+      list(),
       leafletData = data
     ),
     width = width, height = height,
@@ -44,4 +42,31 @@ leaflet = function(data = NULL, id = NULL, width = NULL, height = NULL, padding 
 
 getMapData = function(map) {
   attr(map$x, "leafletData", exact = TRUE)
+}
+
+#' Set options on a leaflet map object
+#'
+#' @param map A map widget object created from \code{\link{leaflet}()}
+#' @param zoomToLimits Controls whether the map is zooms to the limits of the
+#'   elements on the map. This is useful for interactive applications where the
+#'   map data is updated. If \code{"always"} (the default), the map always
+#'   re-zooms when new data is received; if \code{"first"}, it zooms to the
+#'   elements on the first rendering, but does not re-zoom for subsequent data;
+#'   if \code{"never"}, it never re-zooms, not even for the first rendering.
+#'
+#' @examples
+#' # Don't auto-zoom to the objects (can be useful in interactive applications)
+#' leaflet() %>%
+#'   addTiles() %>%
+#'   addPopups(174.7690922, -36.8523071, 'R was born here!') %>%
+#'   mapOptions(zoomToLimits = "first")
+#' @export
+mapOptions <- function(map, zoomToLimits = c("always", "first", "never")) {
+  if (is.null(map$x$options))
+    map$x$options <- list()
+
+  zoomToLimits <- match.arg(zoomToLimits)
+  map$x$options$zoomToLimits <- zoomToLimits
+
+  map
 }

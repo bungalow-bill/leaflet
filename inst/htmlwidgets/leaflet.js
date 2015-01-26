@@ -210,6 +210,20 @@ var dataframe = (function() {
     };
   }
 
+  // Send updated bounds back to app. Takes a leaflet event object as input.
+  function updateBounds(map) {
+    var id = map.getContainer().id;
+    var bounds = map.getBounds();
+
+    Shiny.onInputChange(id + '_bounds', {
+      north: bounds.getNorthEast().lat,
+      east: bounds.getNorthEast().lng,
+      south: bounds.getSouthWest().lat,
+      west: bounds.getSouthWest().lng
+    });
+    Shiny.onInputChange(id + '_zoom', map.getZoom());
+  }
+
   var methods = {};
 
   methods.setView = function(center, zoom, options) {
@@ -494,14 +508,38 @@ var dataframe = (function() {
     initialize: function(el, width, height) {
       // hard-coding center/zoom here for a non-empty initial view, since there
       // is no way for htmlwidgets to pass initial params to initialize()
-      return L.map(el, {
+      var map = L.map(el, {
         center: [51.505, -0.09],
         zoom: 13,
  //       crs: el.hasClass("EPSG") ? EPSG3413 : L.CRS.EPSG3857
         crs: EPSG3413
       });
+
+      // Store some state in the map object
+      map.leafletr = {
+        hasRendered: false
+      };
+
+      if (!HTMLWidgets.shinyMode) return map;
+
+      // When the map is clicked, send the coordinates back to the app
+      map.on('click', function(e) {
+        var id = e.target.getContainer().id;
+
+        Shiny.onInputChange(id + '_click', {
+          lat: e.latlng.lat,
+          lng: e.latlng.lng,
+          '.nonce': Math.random() // Force reactivity if lat/lng hasn't changed
+        });
+      });
+
+      map.on('moveend', function(e) { updateBounds(e.target); });
+
+      return map;
     },
     renderValue: function(el, data, map) {
+      // Merge data options into defaults
+      var options = $.extend({ zoomToLimits: "always" }, data.options);
 
       if (!map.markers) {
         map.markers = new LayerStore(map);
@@ -526,7 +564,15 @@ var dataframe = (function() {
         explicitView = true;
         methods.fitBounds.apply(map, data.fitBounds);
       }
-      if (!explicitView) {
+
+      // Returns true if the zoomToLimits option says that the map should be
+      // zoomed to map elements.
+      function needsZoom() {
+        return options.zoomToLimits === "always" ||
+               (options.zoomToLimits === "first" && !map.leafletr.hasRendered);
+      }
+
+      if (!explicitView && needsZoom()) {
         if (data.limits) {
           // Use the natural limits of what's being drawn on the map
           // If the size of the bounding box is 0, leaflet gets all weird
@@ -554,36 +600,14 @@ var dataframe = (function() {
           methods[call.method].apply(map, call.args);
       }
 
-      var id = data.mapId;
-      if (id === null) return;
-      maps[id] = map;
+      map.leafletr.hasRendered = true;
 
       if (!HTMLWidgets.shinyMode) return;
 
-      // When the map is clicked, send the coordinates back to the app
-      map.on('click', function(e) {
-        Shiny.onInputChange(id + '_click', {
-          lat: e.latlng.lat,
-          lng: e.latlng.lng,
-          '.nonce': Math.random() // Force reactivity if lat/lng hasn't changed
-        });
-      });
+      var id = this.getId(el);
+      maps[id] = map;
 
-      // Send bounds info back to the app
-      function updateBounds() {
-        var bounds = map.getBounds();
-        Shiny.onInputChange(id + '_bounds', {
-          north: bounds.getNorthEast().lat,
-          east: bounds.getNorthEast().lng,
-          south: bounds.getSouthWest().lat,
-          west: bounds.getSouthWest().lng
-        });
-        Shiny.onInputChange(id + '_zoom', map.getZoom());
-      }
-      setTimeout(updateBounds, 1);
-
-      map.on('moveend', updateBounds);
-
+      setTimeout(function() { updateBounds(map); }, 1);
     },
     resize: function(el, width, height, data) {
 
